@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quan ly Sinh Vien</title>
+<style>
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 30px;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .form {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .form input {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  .actions {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .actions button {
+    padding: 8px 16px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+  }
+
+  .btn-add { background: #28a745; }
+  .btn-edit { background: #007bff; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+  }
+
+  th {
+    background: #f1f1f1;
+  }
+
+  tr:hover {
+    background: #fafafa;
+  }
+
+  .btn-table {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+  }
+
+  .btn-sua { background: #17a2b8; }
+  .btn-xoa { background: #dc3545; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>QUAN LY SINH VIEN</h2>
+
+  <!-- FORM -->
+  <input type="hidden" id="id">
+
+  <div class="form">
+    <input id="Masv" placeholder="Ma sinh vien">
+    <input id="Hoten" placeholder="Ho ten">
+    <input id="NamSinh" placeholder="Nam sinh">
+    <input id="lop" placeholder="Lop">
+  </div>
+
+  <div class="actions">
+    <button class="btn-add" onclick="them()">Them sinh vien</button>
+    <button class="btn-edit" onclick="capnhat()">Cap nhat</button>
+  </div>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Ma SV</th>
+        <th>Ho ten</th>
+        <th>Nam sinh</th>
+        <th>Lop</th>
+        <th>Hanh dong</th>
+      </tr>
+    </thead>
+    <tbody id="dsSinhVien"></tbody>
+  </table>
+</div>
+
+<script>
+const API = "https://698592266964f10bf2539cef.mockapi.io/SinhVien";
+
+function loadSinhVien() {
+  fetch(API)
+    .then(res => res.json())
+    .then(data => {
+      let html = "";
+      data.forEach(sv => {
+        html += `
+          <tr>
+            <td>${sv.id}</td>
+            <td>${sv.Masv}</td>
+            <td>${sv.Hoten}</td>
+            <td>${sv.NamSinh}</td>
+            <td>${sv.lop}</td>
+            <td>
+              <button class="btn-table btn-sua"
+                onclick="chon('${sv.id}','${sv.Masv}','${sv.Hoten}','${sv.NamSinh}','${sv.lop}')">
+                Sua
+              </button>
+              <button class="btn-table btn-xoa"
+                onclick="xoa(${sv.id})">
+                Xoa
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      document.getElementById("dsSinhVien").innerHTML = html;
+    });
+}
+
+function them() {
+  const sv = {
+    Masv: Masv.value,
+    Hoten: Hoten.value,
+    NamSinh: NamSinh.value,
+    lop: lop.value
+  };
+
+  fetch(API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(sv)
+  }).then(() => {
+    clearForm();
+    loadSinhVien();
+  });
+}
+
+function chon(id, masv, hoten, namsinh, lopv) {
+  document.getElementById("id").value = id;
+  Masv.value = masv;
+  Hoten.value = hoten;
+  NamSinh.value = namsinh;
+  lop.value = lopv;
+}
+
+function capnhat() {
+  const id = document.getElementById("id").value;
+  if (!id) {
+    alert("Hay chon sinh vien can sua");
+    return;
+  }
+
+  const sv = {
+    Masv: Masv.value,
+    Hoten: Hoten.value,
+    NamSinh: NamSinh.value,
+    lop: lop.value
+  };
+
+  fetch(`${API}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(sv)
+  }).then(() => {
+    clearForm();
+    loadSinhVien();
+  });
+}
+
+function xoa(id) {
+  if (confirm("Ban chac chan muon xoa sinh vien nay?")) {
+    fetch(`${API}/${id}`, { method: "DELETE" })
+      .then(() => loadSinhVien());
+  }
+}
+
+function clearForm() {
+  document.getElementById("id").value = "";
+  Masv.value = "";
+  Hoten.value = "";
+  NamSinh.value = "";
+  lop.value = "";
+}
+
+loadSinhVien();
+</script>
+
+</body>
+</html>
