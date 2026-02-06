@@ -2,9 +2,8 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Quan ly sinh vien - Nhom 19 ca3t6</title>
+<title>Quan ly sinh vien</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{
     font-family: Arial, Helvetica, sans-serif;
@@ -57,6 +56,7 @@ th,td{
     text-align:center;
 }
 th{background:#f4f6f8}
+.editing{background:#fff3cd}
 </style>
 </head>
 
@@ -64,7 +64,7 @@ th{background:#f4f6f8}
 <div class="container">
 <h1>Quan ly sinh vien</h1>
 
-<!-- FORM THEM -->
+<!-- THEM SINH VIEN -->
 <div class="form-add">
     <input id="masv" placeholder="Ma SV">
     <input id="hoten" placeholder="Ho ten">
@@ -89,13 +89,14 @@ th{background:#f4f6f8}
 </div>
 
 <script>
-const API = "https://698592266964f10bf2539cef.mockapi.io/SinhVien";
+const API="https://698592266964f10bf2539cef.mockapi.io/SinhVien";
+let editingId=null;
 
 function loadData(){
-fetch(API).then(r=>r.json()).then(data=>{
+fetch(API).then(r=>r.json()).then(list=>{
     const tbody=document.getElementById("data");
     tbody.innerHTML="";
-    data.forEach(sv=>{
+    list.forEach(sv=>{
         tbody.innerHTML+=`
         <tr id="row-${sv.id}">
             <td>${sv.id}</td>
@@ -113,55 +114,66 @@ fetch(API).then(r=>r.json()).then(data=>{
 }
 
 function addSV(){
-const sv={
-    Masv:masv.value,
-    Hoten:hoten.value,
-    NamSinh:namsinh.value,
-    lop:lop.value
-};
+if(!masv.value||!hoten.value) return alert("Nhap day du thong tin");
 fetch(API,{
     method:"POST",
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(sv)
-}).then(()=>{clearAdd();loadData();});
+    body:JSON.stringify({
+        Masv:masv.value,
+        Hoten:hoten.value,
+        NamSinh:namsinh.value,
+        lop:lop.value
+    })
+}).then(()=>{clearForm();loadData();});
 }
 
 function editRow(id){
+if(editingId) loadData();
+editingId=id;
 fetch(API+"/"+id).then(r=>r.json()).then(sv=>{
-    document.getElementById("row-"+id).innerHTML=`
+    const row=document.getElementById("row-"+id);
+    row.classList.add("editing");
+    row.innerHTML=`
     <td>${id}</td>
-    <td><input id="eMasv${id}" value="${sv.Masv||""}"></td>
-    <td><input id="eHoten${id}" value="${sv.Hoten||""}"></td>
-    <td><input id="eNamSinh${id}" value="${sv.NamSinh||""}"></td>
-    <td><input id="eLop${id}" value="${sv.lop||""}"></td>
+    <td><input id="eMasv" value="${sv.Masv||""}"></td>
+    <td><input id="eHoten" value="${sv.Hoten||""}"></td>
+    <td><input id="eNamSinh" value="${sv.NamSinh||""}"></td>
+    <td><input id="eLop" value="${sv.lop||""}"></td>
     <td>
         <button class="btn-save" onclick="saveRow('${id}')">Luu</button>
-        <button class="btn-cancel" onclick="loadData()">Huy</button>
+        <button class="btn-cancel" onclick="cancelEdit()">Huy</button>
     </td>`;
 });
 }
 
 function saveRow(id){
-const sv={
-    Masv:document.getElementById("eMasv"+id).value,
-    Hoten:document.getElementById("eHoten"+id).value,
-    NamSinh:document.getElementById("eNamSinh"+id).value,
-    lop:document.getElementById("eLop"+id).value
-};
 fetch(API+"/"+id,{
     method:"PUT",
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(sv)
-}).then(()=>loadData());
+    body:JSON.stringify({
+        Masv:eMasv.value,
+        Hoten:eHoten.value,
+        NamSinh:eNamSinh.value,
+        lop:eLop.value
+    })
+}).then(()=>{
+    editingId=null;
+    loadData();
+});
+}
+
+function cancelEdit(){
+editingId=null;
+loadData();
 }
 
 function deleteSV(id){
 if(confirm("Xoa sinh vien nay?")){
-    fetch(API+"/"+id,{method:"DELETE"}).then(()=>loadData());
+    fetch(API+"/"+id,{method:"DELETE"}).then(loadData);
 }
 }
 
-function clearAdd(){
+function clearForm(){
 masv.value="";hoten.value="";namsinh.value="";lop.value="";
 }
 
