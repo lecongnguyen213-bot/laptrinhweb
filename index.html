@@ -2,228 +2,173 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Quan ly Sinh Vien</title>
+<title>Quan ly sinh vien</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-  body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #f4f6f8;
-    margin: 0;
-    padding: 30px;
-  }
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(120deg,#74ebd5,#9face6);
+    min-height:100vh;
+    margin:0;
+    padding:20px;
+}
+.container{
+    max-width:1100px;
+    margin:auto;
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+.form{
+    display:grid;
+    grid-template-columns: repeat(4,1fr) auto;
+    gap:10px;
+    margin-bottom:20px;
+}
+.form input{
+    padding:10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+button{
+    border:none;
+    border-radius:6px;
+    padding:10px 14px;
+    cursor:pointer;
+    color:#fff;
+}
+.btn-add{background:#28a745;}
+.btn-edit{background:#ffc107;color:#000;}
+.btn-delete{background:#dc3545;}
 
-  .container {
-    max-width: 1000px;
-    margin: auto;
-    background: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
-
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-  }
-
-  .form {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-
-  .form input {
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-
-  .actions {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  .actions button {
-    padding: 8px 16px;
-    margin: 0 5px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: #fff;
-  }
-
-  .btn-add { background: #28a745; }
-  .btn-edit { background: #007bff; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  th, td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    text-align: center;
-  }
-
-  th {
-    background: #f1f1f1;
-  }
-
-  tr:hover {
-    background: #fafafa;
-  }
-
-  .btn-table {
-    padding: 5px 10px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    color: #fff;
-  }
-
-  .btn-sua { background: #17a2b8; }
-  .btn-xoa { background: #dc3545; }
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+th,td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
+th{
+    background:#f4f6f8;
+}
+tr:hover{
+    background:#f1f5ff;
+}
 </style>
 </head>
 
 <body>
-
 <div class="container">
-  <h2>QUAN LY SINH VIEN</h2>
+    <h1>Quan ly sinh vien</h1>
 
-  <!-- FORM -->
-  <input type="hidden" id="id">
+    <div class="form">
+        <input id="masv" placeholder="Ma SV">
+        <input id="hoten" placeholder="Ho ten">
+        <input id="namsinh" placeholder="Nam sinh">
+        <input id="lop" placeholder="Lop">
+        <button class="btn-add" onclick="addOrUpdate()">Luu</button>
+    </div>
 
-  <div class="form">
-    <input id="Masv" placeholder="Ma sinh vien">
-    <input id="Hoten" placeholder="Ho ten">
-    <input id="NamSinh" placeholder="Nam sinh">
-    <input id="lop" placeholder="Lop">
-  </div>
-
-  <div class="actions">
-    <button class="btn-add" onclick="them()">Them sinh vien</button>
-    <button class="btn-edit" onclick="capnhat()">Cap nhat</button>
-  </div>
-
-  <!-- TABLE -->
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Ma SV</th>
-        <th>Ho ten</th>
-        <th>Nam sinh</th>
-        <th>Lop</th>
-        <th>Hanh dong</th>
-      </tr>
-    </thead>
-    <tbody id="dsSinhVien"></tbody>
-  </table>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ma SV</th>
+                <th>Ho ten</th>
+                <th>Nam sinh</th>
+                <th>Lop</th>
+                <th>Thao tac</th>
+            </tr>
+        </thead>
+        <tbody id="data"></tbody>
+    </table>
 </div>
 
 <script>
 const API = "https://698592266964f10bf2539cef.mockapi.io/SinhVien";
+let editId = null;
 
-function loadSinhVien() {
-  fetch(API)
-    .then(res => res.json())
-    .then(data => {
-      let html = "";
-      data.forEach(sv => {
-        html += `
-          <tr>
-            <td>${sv.id}</td>
-            <td>${sv.Masv}</td>
-            <td>${sv.Hoten}</td>
-            <td>${sv.NamSinh}</td>
-            <td>${sv.lop}</td>
-            <td>
-              <button class="btn-table btn-sua"
-                onclick="chon('${sv.id}','${sv.Masv}','${sv.Hoten}','${sv.NamSinh}','${sv.lop}')">
-                Sua
-              </button>
-              <button class="btn-table btn-xoa"
-                onclick="xoa(${sv.id})">
-                Xoa
-              </button>
-            </td>
-          </tr>
-        `;
-      });
-      document.getElementById("dsSinhVien").innerHTML = html;
+function loadData(){
+    fetch(API)
+    .then(r=>r.json())
+    .then(data=>{
+        const tbody = document.getElementById("data");
+        tbody.innerHTML="";
+        data.forEach(sv=>{
+            tbody.innerHTML += `
+            <tr>
+                <td>${sv.id}</td>
+                <td>${sv.Masv||""}</td>
+                <td>${sv.Hoten||""}</td>
+                <td>${sv.NamSinh||""}</td>
+                <td>${sv.lop||""}</td>
+                <td>
+                    <button class="btn-edit" onclick="editSV('${sv.id}')">Sua</button>
+                    <button class="btn-delete" onclick="deleteSV('${sv.id}')">Xoa</button>
+                </td>
+            </tr>`;
+        });
     });
 }
 
-function them() {
-  const sv = {
-    Masv: Masv.value,
-    Hoten: Hoten.value,
-    NamSinh: NamSinh.value,
-    lop: lop.value
-  };
+function addOrUpdate(){
+    const sv = {
+        Masv: masv.value,
+        Hoten: hoten.value,
+        NamSinh: namsinh.value,
+        lop: lop.value
+    };
 
-  fetch(API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(sv)
-  }).then(() => {
-    clearForm();
-    loadSinhVien();
-  });
+    if(editId){
+        fetch(API+"/"+editId,{
+            method:"PUT",
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(sv)
+        }).then(()=>{ editId=null; clearForm(); loadData();});
+    }else{
+        fetch(API,{
+            method:"POST",
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(sv)
+        }).then(()=>{ clearForm(); loadData();});
+    }
 }
 
-function chon(id, masv, hoten, namsinh, lopv) {
-  document.getElementById("id").value = id;
-  Masv.value = masv;
-  Hoten.value = hoten;
-  NamSinh.value = namsinh;
-  lop.value = lopv;
+function editSV(id){
+    fetch(API+"/"+id)
+    .then(r=>r.json())
+    .then(sv=>{
+        masv.value = sv.Masv;
+        hoten.value = sv.Hoten;
+        namsinh.value = sv.NamSinh;
+        lop.value = sv.lop;
+        editId = id;
+    });
 }
 
-function capnhat() {
-  const id = document.getElementById("id").value;
-  if (!id) {
-    alert("Hay chon sinh vien can sua");
-    return;
-  }
-
-  const sv = {
-    Masv: Masv.value,
-    Hoten: Hoten.value,
-    NamSinh: NamSinh.value,
-    lop: lop.value
-  };
-
-  fetch(`${API}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(sv)
-  }).then(() => {
-    clearForm();
-    loadSinhVien();
-  });
+function deleteSV(id){
+    if(confirm("Xoa sinh vien nay?")){
+        fetch(API+"/"+id,{method:"DELETE"})
+        .then(()=>loadData());
+    }
 }
 
-function xoa(id) {
-  if (confirm("Ban chac chan muon xoa sinh vien nay?")) {
-    fetch(`${API}/${id}`, { method: "DELETE" })
-      .then(() => loadSinhVien());
-  }
+function clearForm(){
+    masv.value="";
+    hoten.value="";
+    namsinh.value="";
+    lop.value="";
 }
 
-function clearForm() {
-  document.getElementById("id").value = "";
-  Masv.value = "";
-  Hoten.value = "";
-  NamSinh.value = "";
-  lop.value = "";
-}
-
-loadSinhVien();
+loadData();
 </script>
-
 </body>
 </html>
